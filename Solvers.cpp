@@ -20,6 +20,13 @@ void Diagonal(vector<vector<double> > &A, vector<double> &b, vector<double> &x) 
 
 }
 
+// ******************************************************************************** LINEAR SOLVERS ********************************************************************************
+// ******************************************************************************** LINEAR SOLVERS ********************************************************************************
+// ******************************************************************************** LINEAR SOLVERS ********************************************************************************
+// ******************************************************************************** LINEAR SOLVERS ********************************************************************************
+// ******************************************************************************** LINEAR SOLVERS ********************************************************************************
+
+
 void Triangular_Superior(vector<vector<double> > &U, vector<double> &b, vector<double> &x) {
     int n = U.size();
     double X[n];
@@ -186,6 +193,16 @@ void LU_Solve(vector<vector<double> > &A, vector<double>&b, vector<double>&x) {
     }
 }
 
+
+
+// ******************************************************************************** DESCOMPONER MATRIZ ********************************************************************************
+// ******************************************************************************** DESCOMPONER MATRIZ ********************************************************************************
+// ******************************************************************************** DESCOMPONER MATRIZ ********************************************************************************
+// ******************************************************************************** DESCOMPONER MATRIZ ********************************************************************************
+// ******************************************************************************** DESCOMPONER MATRIZ ********************************************************************************
+// ******************************************************************************** DESCOMPONER MATRIZ ********************************************************************************
+
+
 // Metodo para descomponer una matriz unicamente
 
 void Descomposicion_LU(vector<vector<double> > &A, vector<vector<double> > &L, vector<vector<double> > &U) {
@@ -232,6 +249,153 @@ void Descomposicion_LU(vector<vector<double> > &A, vector<vector<double> > &L, v
     //    cout << "MULT R" << endl;
     //    cout << C << endl;
 }
+
+
+// EXTRA
+
+void Descomposicion_LU_Dolittle(vector<vector<double> > &A, vector<vector<double> > &L, vector<vector<double> > &U) {
+    int n = A.size();
+    // inicializar posiciones de U
+    for (int i = 0; i < n; i++) {
+        L[i][i] = 1;
+    }
+
+    for (int k = 0; k < n; k++) {
+        double acc; // variable que contiene la suma
+        //u_kj
+        for (int j = k; j < n; j++) {
+            acc = 0;
+
+            for (int r = 0; r <= k - 1; r++) {
+                acc += L[k][r] * U[r][j];
+            }
+            U[k][j] = A[k][j] - acc;
+        }
+
+        //l_ik
+        for (int i = k + 1; i < n; i++) {
+            acc = 0;
+            for (int r = 0; r <= k - 1; r++) {
+                acc += L[i][r] * U[r][k];
+            }
+            L[i][k] = (A[i][k] - acc) / U[k][k];
+        }
+    }
+
+    //PRUEBA LU FUNCIONA
+    vector<vector<double>> C;
+    C.assign(n, vector<double>(n, 0.0));
+    Matrix_Mult(L, U, C);
+    cout << "MULT R" << endl;
+    cout << C << endl;
+}
+
+void Factorizar(vector< vector<double> >&A, vector< vector<double> >&H) {
+
+    int n = A.size();
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < i; j++) {
+            double acc = 0;
+
+            if (i != j) {
+                //h_ij
+                for (int k = 0; k < j; k++) {
+                    acc += H[i][k] * H[j][k];
+                }
+                H[i][j] = (A[i][j] - acc) / H[j][j];
+            }
+        }
+
+        double acc = 0;
+        // h_ii
+        for (int k = 0; k < i; k++) {
+            acc += H[i][k] * H[i][k];
+        }
+
+        H[i][i] = sqrt(A[i][i] - acc);
+
+    }
+    //calcular transpuesta
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            H[i][j] = H[j][i];
+        }
+    }
+}
+
+void factorizarLDLT(vector< vector<double> >&A, vector< vector<double> >&L, vector< vector<double> >&DLT) {
+    int n = A.size();
+
+    vector<double> D;
+    D.assign(n, 0.0);
+
+    for (int i = 0; i < n; i++) {
+
+
+
+
+        L[i][i] = 1;
+        //L_ij
+        for (int j = 0; j <= i; j++) {
+
+            double acc = 0;
+            // D_jj
+            for (int k = 0; k < j; k++) {
+                acc += L[j][k]* L[j][k] * D[k];
+            }
+            D[j] = A[j][j] - acc;
+
+
+            acc = 0;
+
+            if (i > j) {
+                //h_ij
+                for (int k = 0; k < j; k++) {
+                    acc += L[i][k] * L[j][k] * D[k];
+                }
+                L[i][j] = (A[i][j] - acc) / D[j];
+            }
+        }
+    }
+    //calcular DLT
+    for (int i = 0; i < n; i++) {
+        for (int j = i; j < n; j++) {
+            DLT[i][j] = L[j][i];
+            L[j][i] = L[j][i]*D[i];
+        }
+    }
+}
+
+void FactorizarTriD(vector< vector<double> >&A, vector< vector<double> >&H) {
+    int n = A.size();
+
+    for (int i = 0; i < n; i++) {
+        // no need for acc, hir*hjr = 0
+
+        // h_ij
+        if (i != 0)
+            H[i][i - 1] = A[i][i - 1] / H[i - 1][i - 1];
+        // h_ii
+        H[i][i] = sqrt(A[i][i] - H[i][i - 1] * H[i][i - 1]);
+    }
+
+    //calcular transpuesta
+    for (int i = 0; i < n - 1; i++) {
+        H[i][i + 1] = H[i + 1][i];
+    }
+}
+
+
+
+// ******************************************************************************** ALGORITMOS PARA PIVOTEO ********************************************************************************
+// ******************************************************************************** ALGORITMOS PARA PIVOTEO ********************************************************************************
+// ******************************************************************************** ALGORITMOS PARA PIVOTEO ********************************************************************************
+// ******************************************************************************** ALGORITMOS PARA PIVOTEO ********************************************************************************
+// ******************************************************************************** ALGORITMOS PARA PIVOTEO ********************************************************************************
+// ******************************************************************************** ALGORITMOS PARA PIVOTEO ********************************************************************************
+// ******************************************************************************** ALGORITMOS PARA PIVOTEO ********************************************************************************
+
 
 
 //GEM Pivot
@@ -390,6 +554,20 @@ void LU_pivot(vector<vector<double> > &A, int k, vector<double>&b, vector<int>&i
     }
 }
 
+
+// ******************************************************************************** MATRIX OPERATIONS ********************************************************************************
+// ******************************************************************************** MATRIX OPERATIONS ********************************************************************************
+// ******************************************************************************** MATRIX OPERATIONS ********************************************************************************
+// ******************************************************************************** MATRIX OPERATIONS ********************************************************************************
+// ******************************************************************************** MATRIX OPERATIONS ********************************************************************************
+// ******************************************************************************** MATRIX OPERATIONS ********************************************************************************
+// ******************************************************************************** MATRIX OPERATIONS ********************************************************************************
+// ******************************************************************************** MATRIX OPERATIONS ********************************************************************************
+// ******************************************************************************** MATRIX OPERATIONS ********************************************************************************
+
+
+
+
 // multiplicacion de matrices
 
 void Matrix_Mult(vector< vector<double > > &A, vector<vector<double> >&B, vector<vector<double>>&C) {
@@ -498,140 +676,16 @@ void Try_Sol(vector< vector<double > > &A, vector<double>&b, vector<double>&x) {
 
 
 
-// EXTRA
-
-void Descomposicion_LU_Dolittle(vector<vector<double> > &A, vector<vector<double> > &L, vector<vector<double> > &U) {
-    int n = A.size();
-    // inicializar posiciones de U
-    for (int i = 0; i < n; i++) {
-        L[i][i] = 1;
-    }
-
-    for (int k = 0; k < n; k++) {
-        double acc; // variable que contiene la suma
-        //u_kj 
-        for (int j = k; j < n; j++) {
-            acc = 0;
-
-            for (int r = 0; r <= k - 1; r++) {
-                acc += L[k][r] * U[r][j];
-            }
-            U[k][j] = A[k][j] - acc;
-        }
-
-        //l_ik 
-        for (int i = k + 1; i < n; i++) {
-            acc = 0;
-            for (int r = 0; r <= k - 1; r++) {
-                acc += L[i][r] * U[r][k];
-            }
-            L[i][k] = (A[i][k] - acc) / U[k][k];
-        }
-    }
-
-    //PRUEBA LU FUNCIONA
-    vector<vector<double>> C;
-    C.assign(n, vector<double>(n, 0.0));
-    Matrix_Mult(L, U, C);
-    cout << "MULT R" << endl;
-    cout << C << endl;
-}
-
-void Factorizar(vector< vector<double> >&A, vector< vector<double> >&H) {
-
-    int n = A.size();
-
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < i; j++) {
-            double acc = 0;
-
-            if (i != j) {
-                //h_ij
-                for (int k = 0; k < j; k++) {
-                    acc += H[i][k] * H[j][k];
-                }
-                H[i][j] = (A[i][j] - acc) / H[j][j];
-            }
-        }
-
-        double acc = 0;
-        // h_ii
-        for (int k = 0; k < i; k++) {
-            acc += H[i][k] * H[i][k];
-        }
-
-        H[i][i] = sqrt(A[i][i] - acc);
-
-    }
-    //calcular transpuesta
-    for (int i = 0; i < n; i++) {
-        for (int j = i + 1; j < n; j++) {
-            H[i][j] = H[j][i];
-        }
-    }
-}
-
-void factorizarLDLT(vector< vector<double> >&A, vector< vector<double> >&L, vector< vector<double> >&DLT) {
-    int n = A.size();
-
-    vector<double> D;
-    D.assign(n, 0.0);
-
-    for (int i = 0; i < n; i++) {
+// ******************************************************************************** METODOS ITERATIVOS ********************************************************************************
+// ******************************************************************************** METODOS ITERATIVOS ********************************************************************************
+// ******************************************************************************** METODOS ITERATIVOS ********************************************************************************
+// ******************************************************************************** METODOS ITERATIVOS ********************************************************************************
+// ******************************************************************************** METODOS ITERATIVOS ********************************************************************************
+// ******************************************************************************** METODOS ITERATIVOS ********************************************************************************
+// ******************************************************************************** METODOS ITERATIVOS ********************************************************************************
 
 
 
-
-        L[i][i] = 1;
-        //L_ij
-        for (int j = 0; j <= i; j++) {
-
-            double acc = 0;
-            // D_jj
-            for (int k = 0; k < j; k++) {
-                acc += L[j][k]* L[j][k] * D[k];
-            }
-            D[j] = A[j][j] - acc;
-
-
-             acc = 0;
-
-            if (i > j) {
-                //h_ij
-                for (int k = 0; k < j; k++) {
-                    acc += L[i][k] * L[j][k] * D[k];
-                }
-                L[i][j] = (A[i][j] - acc) / D[j];
-            }
-        }
-    }
-    //calcular DLT
-    for (int i = 0; i < n; i++) {
-        for (int j = i; j < n; j++) {
-            DLT[i][j] = L[j][i];
-            L[j][i] = L[j][i]*D[i];
-        }
-    }
-}
-
-void FactorizarTriD(vector< vector<double> >&A, vector< vector<double> >&H) {
-    int n = A.size();
-
-    for (int i = 0; i < n; i++) {
-        // no need for acc, hir*hjr = 0
-
-        // h_ij
-        if (i != 0)
-            H[i][i - 1] = A[i][i - 1] / H[i - 1][i - 1];
-        // h_ii
-        H[i][i] = sqrt(A[i][i] - H[i][i - 1] * H[i][i - 1]);
-    }
-
-    //calcular transpuesta
-    for (int i = 0; i < n - 1; i++) {
-        H[i][i + 1] = H[i + 1][i];
-    }
-}
 
 void Jacobi(vector<vector <double> > &A, vector < double> &b, vector< double> &x, double error, int max_it) {
 
