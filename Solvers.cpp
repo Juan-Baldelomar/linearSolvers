@@ -1310,11 +1310,12 @@ void metodoSubespacio(vector<vector< double>> &A, vector<vector<double>> &eigenv
     vector<double> Av;
 
     // matrices para factorizar, phi^T*A, matriz de vectores propios transpuesta, rotacion de Givens, Matriz de metodo de Jacobi
-    vector<vector<double>> L, U, phiT_A, eigenvectors_T, G, J;
+    vector<vector<double>> L, U, phiT_A, phi_A, eigenvectors_T, G, J;
 
     L.assign(n, vector<double>(n, 0.0));
     U.assign(n, vector<double>(n, 0.0));
     phiT_A.assign(s, vector<double>(n, 0.0));
+    phi_A.assign(n, vector<double>(s, 0.0));
     G.assign(s, vector<double>(s, 0.0));
     J.assign(s, vector<double>(s,0.0));
 
@@ -1340,11 +1341,19 @@ void metodoSubespacio(vector<vector< double>> &A, vector<vector<double>> &eigenv
          * */
         transposeMatrix(eigenvectors, eigenvectors_T);
 
-        /* phiT_A = phi^T*A (porque los eigenvectores los accesamos por fila)
-         * J = phiT_A* phi
+        /* A_phi = A*phi (como los eigenvectores los accesamos por fila, eigenvectors_T = phi)
+         * J =  phi_T* A_phi
          * */
-        Matrix_Mult(eigenvectors, A, phiT_A);
-        Matrix_Mult(phiT_A, eigenvectors_T, J);
+        Matrix_Mult(A, eigenvectors_T, phi_A);
+        Matrix_Mult(eigenvectors, phi_A, J);
+
+        /*
+         * otra forma de realizar la operacion superior, pero sin la variabla phi_A declarada. Optimizamos espacio
+         * utilizar esta forma en caso de querer calcular el error viendo de la matriz J es diagonal o G es la identidad
+         * de manera que el error en los eigenvectores sera mayor pero la aproximacion de los eigenvalores sera optima y el metodo va a converge mas rapido
+        //Matrix_Mult(eigenvectors, A, phiT_A);
+        //Matrix_Mult(phiT_A, eigenvectors_T, J);
+         */
 
         /* aplicar Jacobi
          * Obtener matriz de Givens transpuesta (G^T)
@@ -1362,15 +1371,16 @@ void metodoSubespacio(vector<vector< double>> &A, vector<vector<double>> &eigenv
         for (int i = 0; i<s; i++){
             double v_err = 0;
             for (int j = 0; j<n; j++){
-                double dif = eigenvectors[i][j] - phiT_A[i][j];
                 eigenvectors[i][j] = phiT_A[i][j];
+                double dif = eigenvalues[i]*eigenvectors[i][j] - phi_A[j][i];
                 v_err += dif*dif;
             }
-            err+= sqrt(v_err);
-            //normalize(eigenvectors[i]);
+
+            if (sqrt(v_err)>err)
+                err = sqrt(v_err);
         }
 
-        if (sqrt(err)<tol){
+        if (err<tol){
             cout << " Convergencia en iteracion: " << it<< endl;
             return;
         }
