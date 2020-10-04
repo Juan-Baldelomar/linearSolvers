@@ -87,7 +87,7 @@ void ejercicio3(){
     eigenvectors.assign(2, vector<double>(A.size(), 0.0));
 
 
-    metodoSubespacio(A, eigenvectors, eigenvalues, 0.000001, 1000);
+    metodoSubespacio(A, eigenvectors, eigenvalues, 0.000001, false, 1000);
 
     WriteVector(v, "Out/Eigenvector_3x3.txt");
     ReadMatrix(A, "Insumo_Tarea07/Eigen_3x3.txt");
@@ -98,10 +98,10 @@ void ejercicio3(){
     vector<double> b;
     b.assign(eigenvectors[0].size(), 0);
 
-    for (int i = 0; i < eigenvectors[0].size(); i++)
-        b[i] = eigenvalues[0] * eigenvectors[0][i];
+    for (int i = 0; i < eigenvectors[1].size(); i++)
+        b[i] = eigenvalues[1] * eigenvectors[1][i];
 
-    Try_Sol(A, b, eigenvectors[0]);
+    Try_Sol(A, b, eigenvectors[1]);
 }
 
 void ejercicio4(){
@@ -118,7 +118,7 @@ void ejercicio4(){
     eigenvectors.assign(10, vector<double>(A.size(), 0.0));
 
 
-    metodoSubespacio(A, eigenvectors, eigenvalues, 0.000001, 1000);
+    metodoSubespacio(A, eigenvectors, eigenvalues, 0.000001, false, 1000);
 
     WriteVector(v, "Out/Eigenvector_50x50.txt");
     ReadMatrix(A, "Insumo_Tarea07/Eigen_50x50.txt");
@@ -172,7 +172,7 @@ void ejercicioP(){
 
 
 int main() {
-    ejercicio4();
+    ejercicio3();
     return 0;
 }
 

@@ -33,5 +33,5 @@ void PotenciaInversa(vector < vector < double >> &A, vector <double> &v, double 
 void PotenciaInversaDeflacion(vector < vector <double>> &A, vector<vector<double>> &eigenvectors, vector<double> &eigenvalues, double tol, int range, int max_it);
 void JacobiEigenValues(vector< vector < double>> &A, vector<double> &eigenvalues, double tol, int max_it=1000);
 void cocienteRayleigh(vector<vector<double>> &A, vector<double> &v, double &lambda, double tol, int max_it=1000);
-void metodoSubespacio(vector<vector< double>> &A, vector<vector<double>> &eigenvectors, vector<double> &eigenvalues, double tol, int max_it=1000);
+void metodoSubespacio(vector<vector< double>> &A, vector<vector<double>> &eigenvectors, vector<double> &eigenvalues, double tol, bool powerMethodType = true, int max_it=1000);
 #endif
