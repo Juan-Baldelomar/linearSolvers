@@ -575,7 +575,7 @@ void Matrix_Mult(vector< vector<double > > &A, vector<vector<double> >&B, vector
     int m = B[0].size();
     int p = A[0].size();
     for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
+        for (int j = 0; j < m; j++) {
             double acc = 0;
             for (int k = 0; k < p; k++) {
                 acc += A[i][k] * B[k][j];
@@ -584,6 +584,23 @@ void Matrix_Mult(vector< vector<double > > &A, vector<vector<double> >&B, vector
         }
     }
 }
+
+//recibe dos matrices y realiza la multiplicacion transponiendo la primera
+void Transpose_Matrix_Mult(vector< vector<double > > &AT, vector<vector<double> >&B, vector<vector<double>>&C) {
+    int n = AT[0].size();
+    int m = B[0].size();
+    int p = AT.size();
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            double acc = 0;
+            for (int k = 0; k < p; k++) {
+                acc += AT[k][i] * B[k][j];
+            }
+            C[i][j] = acc;
+        }
+    }
+}
+
 
 // multiplicacion de matrices
 
@@ -618,6 +635,7 @@ void VectorConstant_Mult(vector< double> &v, double c) {
         v[i] = v[i] * c;
 }
 
+// normalizar un vector
 void normalize(vector<double> &v) {
     int n = v.size();
     double suma = 0;
@@ -630,6 +648,7 @@ void normalize(vector<double> &v) {
         v[i] = v[i] / suma;
 }
 
+// obtener la norma de un vector
 double normaVector(vector<double> &v) {
     int n = v.size();
     double suma = 0;
@@ -639,6 +658,28 @@ double normaVector(vector<double> &v) {
     return sqrt(suma);
 }
 
+double normaCuadradaVector(vector<double> &v) {
+    int n = v.size();
+    double suma = 0;
+    for (int i = 0; i < n; i++)
+        suma += v[i] * v[i];
+
+    return suma;
+}
+
+
+void transposeMatrix(vector<vector<double>>&M, vector<vector<double>>&MT){
+    int n = M.size();
+    int m = M[0].size();
+    if (MT.empty())
+        MT.assign(m, vector<double>(n,0.0));
+
+    for (int i = 0; i<m; i++){
+        for(int j = 0; j<n; j++){
+            MT[i][j] = M[j][i];
+        }
+    }
+}
 
 
 
@@ -658,6 +699,56 @@ void MatrixLU_Mult(vector< vector< double > > &M, vector< vector< double>> &R) {
     }
 }
 
+// ortogonalizar un vector respecto a una lista de  vectores
+// nValidVectors = 0 por defecto. Este parametro indica si se debe tomar todos los vectores de la lista si tiene el valor de 0 o de lo contrario considera el valor enviado
+// isNormalized = false por defecto
+void grand_schmidt(vector<vector<double>> &lista_vectores, vector<double> &v, int nValidVectors, bool isNormalized){
+    int nVectors;
+    int n = v.size();
+    if (nValidVectors < 0)
+        nVectors = lista_vectores.size();
+    else
+        nVectors = nValidVectors;
+
+    for (int j = 0; j<nVectors; j++){
+        double a_k = TransposeVectorMult(lista_vectores[j], v);
+        if (!isNormalized)
+            a_k = a_k/normaCuadradaVector(lista_vectores[j]);
+
+        for (int k=0; k<n; k++){
+            v[k] = v[k] - a_k * lista_vectores[j][k];
+        }
+    }
+}
+
+void Identity(vector<vector<double>>&M){
+    int n = M.size();
+    int m = M[0].size();
+
+    for (int i = 0; i<n; i++){
+        for (int j = 0; j<n; j++){
+            if (i==j)
+                M[i][i] = 1;
+            else
+                M[i][j] = 0;
+        }
+    }
+}
+
+void copyMatrix(vector<vector<double>> &Origin, vector<vector<double>> &Dest){
+    int n = Origin.size();
+    int m = Origin[0].size();
+
+    if (n != Dest.size() || m!= Dest[0].size()){
+        cout << "ERR COPY MATRIX: SIZES DONT MATCH" <<endl;
+        return;
+    }
+    for (int i = 0; i<n; i++){
+        for (int j = 0; j<n; j++){
+            Dest[i][j] = Origin[i][j];
+        }
+    }
+}
 
 // Metodo para probar que el vector solucion de la igualdad esperada 
 
@@ -943,6 +1034,8 @@ void PotenciaInversaDeflacion(vector < vector <double>> &A, vector<vector<double
     // Descomposicion Matriz
     Descomposicion_LU(A, L, U);
 
+    int total_iterations = 0;
+
     for (int e_i = 0; e_i < range; e_i++) {
         v0.assign(n, 1);
 
@@ -976,8 +1069,10 @@ void PotenciaInversaDeflacion(vector < vector <double>> &A, vector<vector<double
                 v0[i] = eigenvectors[e_i][i];
             }// i
 
-            if (sqrt(error) < tol)
+            if (sqrt(error) < tol){
+                total_iterations+= it+1;
                 break;
+            }
 
 
             // correcion del vector para eliminar componentes de vectores propios ya encontrados
@@ -992,6 +1087,8 @@ void PotenciaInversaDeflacion(vector < vector <double>> &A, vector<vector<double
         eigenvalues[e_i] = lambda;
         cout << e_i << ":" << lambda << endl;
     }
+
+    cout << "convergencia en iteracion: " << total_iterations << endl;
 }
 
 void JacobiEigenValues(vector< vector < double>> &A, vector<double> &eigenvalues, double tol, int max_it) {
@@ -1061,6 +1158,86 @@ void JacobiEigenValues(vector< vector < double>> &A, vector<double> &eigenvalues
     cout << "Metodo no pudo converger " << endl;
 }
 
+int JacobiKrylov(vector< vector < double>> &A, vector<double> &eigenvalues, vector<vector<double>> &G, double tol, int max_it){
+    int n = A.size();
+    int i_max = 0, j_max = 0;
+    int i_max_prev = 1, j_max_prev = 0;
+
+    vector<vector<double>> A_tmp;
+
+    //inicializar G
+    G.assign(n, vector<double>(n, 0.0));
+    A_tmp.assign(n, vector<double>(n, 0.0));
+
+    for (int i = 0; i < n; i++)
+        G[i][i] = 1;
+
+
+    for (int it = 0; it < max_it; it++) {
+
+        //find MAX
+        double max = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == j)
+                    continue;
+                if (fabs(A[i][j]) > max) {
+                    i_max = i;
+                    j_max = j;
+                    max = fabs(A[i][j]);
+                }
+            }
+        }
+
+        // criterio de paro
+        if (max < tol) {
+           // G[i_max_prev][j_max_prev] = -G[i_max_prev][j_max_prev];
+           // G[j_max_prev][i_max_prev] = -G[j_max_prev][i_max_prev];
+
+            for (int i = 0; i < n; i++)
+                eigenvalues[i] = A[i][i];
+            return it;
+        }
+
+        // Restaurar G
+        G[i_max_prev][i_max_prev] = G[j_max_prev][j_max_prev] = 1;
+        G[i_max_prev][j_max_prev] = G[j_max_prev][i_max_prev] = 0;
+
+        // actualizar valores previos
+        i_max_prev = i_max;
+        j_max_prev = j_max;
+
+        // calculo de valores para matriz G
+        double delta = (A[j_max][j_max] - A[i_max][i_max]) / (2 * A[i_max][j_max]);
+        double sign = delta < 0 ? -1 : delta > 0 ? 1 : 0;
+        double t = sign / (fabs(delta) + sqrt(1 + delta * delta));
+        double c = 1 / (sqrt(1 + t * t));
+        double s = c*t;
+
+
+        // calculo de matriz G
+        G[i_max][i_max] = G[j_max][j_max] = c;
+        G[i_max][j_max] = s;
+        G[j_max][i_max] = -s;
+
+        // A*G
+        Matrix_Mult(A, G, A_tmp);
+
+        // G^T
+        double tmp = G[i_max][j_max];
+        G[i_max][j_max] = G[j_max][i_max];
+        G[j_max][i_max] = tmp;
+
+        // G^T(AG)
+        Matrix_Mult(G, A_tmp, A);
+
+
+    } //it
+
+    cout << "WARNING JACOBI :Metodo no pudo converger " << endl;
+    return max_it;
+}
+
 void cocienteRayleigh(vector<vector<double>> &A, vector<double> &v, double &lambda, double tol, int max_it) {
     int n = A.size();
 
@@ -1119,6 +1296,87 @@ void cocienteRayleigh(vector<vector<double>> &A, vector<double> &v, double &lamb
             return;
     }
     cout << "WARNING RAYLEIGH: Metodo no pudo converger "<<endl;
+
+}
+
+/*
+ * eigenvectors en realidad sera la matriz de vectores propios pero transpuesta para mayor facilidad de poder accesar a ellos y operar con ellos
+ * */
+void metodoSubespacio(vector<vector< double>> &A, vector<vector<double>> &eigenvectors, vector<double> &eigenvalues, double tol, int max_it){
+    int n = A.size();
+    int s = eigenvectors.size();
+
+    //inicializacion
+    vector<double> Av;
+
+    // matrices para factorizar, phi^T*A, matriz de vectores propios transpuesta, rotacion de Givens, Matriz de metodo de Jacobi
+    vector<vector<double>> L, U, phiT_A, eigenvectors_T, G, J;
+
+    L.assign(n, vector<double>(n, 0.0));
+    U.assign(n, vector<double>(n, 0.0));
+    phiT_A.assign(s, vector<double>(n, 0.0));
+    G.assign(s, vector<double>(s, 0.0));
+    J.assign(s, vector<double>(s,0.0));
+
+    // inicializar identidad
+    Identity(eigenvectors);
+
+    //descomposicion
+    factorizarLDLT(A, L, U);
+
+    for (int it = 0; it<max_it; it++){
+
+        //iteration of inverse power method with deflation
+        for (int ev_pos = 0; ev_pos<s; ev_pos++){
+            grand_schmidt(eigenvectors, eigenvectors[ev_pos], ev_pos, true);
+            Triangular_Inferior(L, eigenvectors[ev_pos], eigenvectors[ev_pos]);
+            Triangular_Superior(U, eigenvectors[ev_pos], eigenvectors[ev_pos]);
+            normalize(eigenvectors[ev_pos]);
+        }
+
+        /* calcular transpuesta de matriz phi (eigenvectores)
+         * recordemos que almacenamos los eigenvectores por fila y no por columna para facilidad de operarlos y accesarlos como eigenvector[pos]
+         * entonces al querer multiplicar la matriz de eigenvectores por columnas como se hace en la teoria, debemos primero transponer la matriz de eigenvectores
+         * */
+        transposeMatrix(eigenvectors, eigenvectors_T);
+
+        /* phiT_A = phi^T*A (porque los eigenvectores los accesamos por fila)
+         * J = phiT_A* phi
+         * */
+        Matrix_Mult(eigenvectors, A, phiT_A);
+        Matrix_Mult(phiT_A, eigenvectors_T, J);
+
+        /* aplicar Jacobi
+         * Obtener matriz de Givens transpuesta (G^T)
+         * */
+        it+= JacobiKrylov(J, eigenvalues, G, tol, max_it) + 1;
+
+        /* aplicar rotacion de givens a matriz phiT_A
+         *  phi^(k) = phi^(k-1) * G
+         *  phi^(k) = G^T * phi^{(k-1), T}   [recordando (AB)^T = B^T*A^T]
+         * */
+        Matrix_Mult(G, eigenvectors, phiT_A);
+
+        // actualizar para nueva iteracion
+        double err = 0;
+        for (int i = 0; i<s; i++){
+            double v_err = 0;
+            for (int j = 0; j<n; j++){
+                double dif = eigenvectors[i][j] - phiT_A[i][j];
+                eigenvectors[i][j] = phiT_A[i][j];
+                v_err += dif*dif;
+            }
+            err+= sqrt(v_err);
+            //normalize(eigenvectors[i]);
+        }
+
+        if (sqrt(err)<tol){
+            cout << " Convergencia en iteracion: " << it<< endl;
+            return;
+        }
+    }
+
+    cout << "WARNING METODO SUBESPACIO: metodo no pudo converger" <<endl;
 
 }
 

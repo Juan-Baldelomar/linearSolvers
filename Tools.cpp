@@ -68,6 +68,16 @@ void WriteVector(const vector<double> &V, string filename, bool flag_append)
 
 }
 
+
+/*vector<double> operator-(const vector<double>& v1, const vector<double>& v2)
+{
+    int n = v1.size();
+    for (int i = 0; i<n ;i++ ){
+
+    }
+}*/
+
+
 ostream &operator<<(ostream &os, const vector< vector<double> > &M)
 {
    for(int i = 0; i < M.size(); i++)
@@ -87,5 +97,8 @@ ostream &operator<<(ostream &os, const vector<double> &V)
       os <<endl;
    return os;
 }
+
+
+
 
 

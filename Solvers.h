@@ -23,6 +23,7 @@ void Matrix_Mult(vector<vector<double>>&A, vector<vector<double>>&B, vector<vect
 void VectorConstant_Mult(vector< double> &v, double c);
 void MatrixLU_Mult(vector<vector<double>>&M, vector<vector<double>>&R);
 void VectorConstant_Mult(vector< double> &v, double c);
+void grand_schmidt(vector<vector<double>> &lista_vectores, vector<double> &v, int nValidVectors = 0, bool isNormalized = false);
 void Try_Sol(vector< vector<double > > &A, vector<double>&b, vector<double>&x);
 void Jacobi(vector<vector <double> > &A, vector < double> &b, vector< double> &x, double error, int max_it=1000);
 void Gauss_Seidel(vector<vector <double> > &A, vector < double> &b, vector< double> &x, double error, int max_it =1000);
@@ -32,4 +33,5 @@ void PotenciaInversa(vector < vector < double >> &A, vector <double> &v, double 
 void PotenciaInversaDeflacion(vector < vector <double>> &A, vector<vector<double>> &eigenvectors, vector<double> &eigenvalues, double tol, int range, int max_it);
 void JacobiEigenValues(vector< vector < double>> &A, vector<double> &eigenvalues, double tol, int max_it=1000);
 void cocienteRayleigh(vector<vector<double>> &A, vector<double> &v, double &lambda, double tol, int max_it=1000);
+void metodoSubespacio(vector<vector< double>> &A, vector<vector<double>> &eigenvectors, vector<double> &eigenvalues, double tol, int max_it=1000);
 #endif
