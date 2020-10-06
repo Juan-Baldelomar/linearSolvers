@@ -340,26 +340,29 @@ void Descomposicion_LU_Dolittle(vector<vector<double> > &A, vector<vector<double
  * A[i][1] diagonal principal
  * A[i][2] diagonal superior
  *
- * L[i] vector que almacena matriz L
- * U[i] matriz que almacena Matriz U
- * U[i][0] diagonal principal
- * U[i][1] diagonal superior
+ * LU[i][0] Diagonal Inferior L
+ * LU[i][1] Diagonal Principal L
+ * LU[i][2] diagonal principal U
+ * LU[i][3] diagonal superior U
  */
-void Descomposicion_LU_Dolittle_TriD(vector<vector<double> > &A, vector<double>  &L, vector<vector<double>> &U) {
+void Descomposicion_LU_Dolittle_TriD(vector<vector<double> > &A, vector<vector<double>> &LU) {
     int n = A.size();
     // inicializar posiciones de U
-
-    U[0][0] = A[0][1];
-    U[0][1] = A[0][2];
+    LU[0][2] = A[0][1]; //Diagonal Principal U
+    LU[0][3] = A[0][2]; //Diagonal Superior U
+    LU[0][1] = 1; //Diagonal Principal L
 
     for (int i = 1; i<n; i++){
-
-        L[i] = A[i][0]/U[i-1][0];
+        // Diagonal Inferior L
+        LU[i][0] = A[i][0]/LU[i-1][2];
+        // Diagonal Principal L
+        LU[i][1] = 1;
+        // Diagonal Superior U
         if (i<n-1)
-            U[i][1] = A[i][2];
+            LU[i][3] = A[i][2];
 
-        U[i][0] = A[i][1]-L[i]*U[i-1][1];
-
+        //Diagonal Principal U
+        LU[i][2] = A[i][1]-LU[i][0]*LU[i-1][3];
     }
 }
 
@@ -438,7 +441,7 @@ void factorizarLDLT(vector<vector<double> > &A, vector<vector<double> > &L, vect
     }
 }
 
-void FactorizarCholeskyTriD(vector<vector<double> > &A, vector<vector<double> > &H) {
+/*void FactorizarCholeskyTriD(vector<vector<double> > &A, vector<vector<double> > &H) {
     int n = A.size();
 
     for (int i = 0; i < n; i++) {
@@ -455,25 +458,22 @@ void FactorizarCholeskyTriD(vector<vector<double> > &A, vector<vector<double> > 
     for (int i = 0; i < n - 1; i++) {
         H[i][i + 1] = H[i + 1][i];
     }
-}
+}*/
 
 
-void FactorizarCholeskyTriD(vector<double> &D, vector<double>&L, vector<double> &H) {
+void FactorizarCholeskyTriD(vector<vector<double>> &D, vector<vector<double>>&LLT) {
     int n = D.size();
-
     for (int i = 0; i < n; i++) {
-        // no need for acc, hir*hjr = 0
 
         // h_ij
         if (i != 0)
-            L[i] = L[i]/ D[i - 1];
+            LLT[i][0] = D[i][0]/ LLT[i - 1][1];
         // h_ii
-        D[i] = sqrt(D[i] - L[i] * L[i]);
+        LLT[i][1] = sqrt(D[i][1] - LLT[i][0] * LLT[i][0]);
     }
-
     //calcular transpuesta
     for (int i = 0; i < n - 1; i++) {
-        H[i] = L[i+1];
+        LLT[i][2] = LLT[i+1][0];
     }
 }
 
