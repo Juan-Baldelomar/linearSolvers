@@ -293,7 +293,36 @@ void Descomposicion_LU_Dolittle(vector<vector<double> > &A, vector<vector<double
     cout << C << endl;
 }
 
-void Factorizar(vector<vector<double> > &A, vector<vector<double> > &H) {
+
+/**
+ * A[i][0] diagonal inferior
+ * A[i][1] diagonal principal
+ * A[i][2] diagonal superior
+ *
+ * L[i] vector que almacena matriz L
+ * U[i] matriz que almacena Matriz U
+ * U[i][0] diagonal principal
+ * U[i][1] diagonal superior
+ */
+void Descomposicion_LU_Dolittle_TriD(vector<vector<double> > &A, vector<double>  &L, vector<vector<double>> &U) {
+    int n = A.size();
+    // inicializar posiciones de U
+
+    U[0][0] = A[0][1];
+    U[0][1] = A[0][2];
+
+    for (int i = 1; i<n; i++){
+
+        L[i] = A[i][0]/U[i-1][0];
+        if (i<n-1)
+            U[i][1] = A[i][2];
+
+        U[i][0] = A[i][1]-L[i]*U[i-1][1];
+
+    }
+}
+
+void FactorizarCholesky(vector<vector<double> > &A, vector<vector<double> > &H) {
 
     int n = A.size();
 
@@ -368,7 +397,7 @@ void factorizarLDLT(vector<vector<double> > &A, vector<vector<double> > &L, vect
     }
 }
 
-void FactorizarTriD(vector<vector<double> > &A, vector<vector<double> > &H) {
+void FactorizarCholeskyTriD(vector<vector<double> > &A, vector<vector<double> > &H) {
     int n = A.size();
 
     for (int i = 0; i < n; i++) {
@@ -384,6 +413,26 @@ void FactorizarTriD(vector<vector<double> > &A, vector<vector<double> > &H) {
     //calcular transpuesta
     for (int i = 0; i < n - 1; i++) {
         H[i][i + 1] = H[i + 1][i];
+    }
+}
+
+
+void FactorizarCholeskyTriD(vector<double> &D, vector<double>&L, vector<double> &H) {
+    int n = D.size();
+
+    for (int i = 0; i < n; i++) {
+        // no need for acc, hir*hjr = 0
+
+        // h_ij
+        if (i != 0)
+            L[i] = L[i]/ D[i - 1];
+        // h_ii
+        D[i] = sqrt(D[i] - L[i] * L[i]);
+    }
+
+    //calcular transpuesta
+    for (int i = 0; i < n - 1; i++) {
+        H[i] = L[i+1];
     }
 }
 
@@ -722,6 +771,21 @@ void MatrixLU_Mult(vector<vector<double> > &M, vector<vector<double>> &R) {
     }
 }
 
+
+void TriD_Matrix_Mult(vector<double>&D, vector<double>&L, vector<double>&U){
+   /* int n = D.size();
+    for (int i =0; i<n; i++){
+        if (i == 0)
+            cout << L[i]*L[i] << endl;
+        else{
+            double l = L[i]*D[i];
+            double d = D[i]*D[i]+l*l;
+            cout << l << "  " << d << " "
+        }
+    }*/
+}
+
+
 // ortogonalizar un vector respecto a una lista de  vectores
 // nValidVectors = 0 por defecto. Este parametro indica si se debe tomar todos los vectores de la lista si tiene el valor de 0 o de lo contrario considera el valor enviado
 // isNormalized = false por defecto
@@ -773,7 +837,28 @@ void copyMatrix(vector<vector<double>> &Origin, vector<vector<double>> &Dest) {
     }
 }
 
-// Metodo para probar que el vector solucion de la igualdad esperada 
+void copyVector(vector<double> &origin, vector<double> &dest){
+    int n = origin.size();
+    if (n!= dest.size()){
+        cout << "ERR CPY VECTOR: Sizes dont match" << endl;
+        return;
+    }
+    for (int i =0; i<n; i++)
+        dest[i] = origin[i];
+}
+
+void copyVectorToCol(vector<double> &origin, vector<vector<double>> &dest, int col){
+    int n = origin.size();
+    if (n!= dest.size()){
+        cout << "ERR CPY VECTOR: Sizes dont match" << endl;
+        return;
+    }
+    for (int i =0; i<n; i++)
+        dest[i][col] = origin[i];
+}
+
+
+// Metodo para probar que el vector solucion de la igualdad esperada
 
 void Try_Sol(vector<vector<double> > &A, vector<double> &b, vector<double> &x) {
     cout
@@ -1323,8 +1408,10 @@ void cocienteRayleigh(vector<vector<double>> &A, vector<double> &v, double &lamb
             double dif = Av[i] - lambda * v[i];
             err += dif * dif;
         }
-        if (sqrt(err) < tol)
+        if (sqrt(err) < tol){
+            cout << "Convergencia Iteracion: " << it + 1 << endl;
             return;
+        }
     }
     cout << "WARNING RAYLEIGH: Metodo no pudo converger " << endl;
 
@@ -1348,8 +1435,12 @@ void metodoSubespacio(vector<vector<double>> &A, vector<vector<double>> &eigenve
 
     L.assign(n, vector<double>(n, 0.0));
     U.assign(n, vector<double>(n, 0.0));
+
+    //matriz de eigenvectores y eigenvectores transpuestos
     phiT_A.assign(s, vector<double>(n, 0.0));
     phi_A.assign(n, vector<double>(s, 0.0));
+
+    // Matriz de Givens y de iteracion de Jacobi
     G.assign(s, vector<double>(s, 0.0));
     J.assign(s, vector<double>(s, 0.0));
 
@@ -1363,7 +1454,7 @@ void metodoSubespacio(vector<vector<double>> &A, vector<vector<double>> &eigenve
 
     for (int it = 0; it < max_it; it++) {
 
-        //iteration of inverse power method with deflation
+        //iteration of inverse power or power method with deflation
         for (int ev_pos = 0; ev_pos < s; ev_pos++) {
             grand_schmidt(eigenvectors, eigenvectors[ev_pos], ev_pos, true);
             if (powerMethodType) {
@@ -1392,9 +1483,10 @@ void metodoSubespacio(vector<vector<double>> &A, vector<vector<double>> &eigenve
          * otra forma de realizar la operacion superior, pero sin la variabla phi_A declarada. Optimizamos espacio
          * utilizar esta forma en caso de querer calcular el error viendo de la matriz J es diagonal o G es la identidad
          * de manera que el error en los eigenvectores sera mayor pero la aproximacion de los eigenvalores sera optima y el metodo va a converge mas rapido
+         * */
         //Matrix_Mult(eigenvectors, A, phiT_A);
         //Matrix_Mult(phiT_A, eigenvectors_T, J);
-         */
+
 
         /* aplicar Jacobi
          * Obtener matriz de Givens transpuesta (G^T)
@@ -1411,6 +1503,7 @@ void metodoSubespacio(vector<vector<double>> &A, vector<vector<double>> &eigenve
         double err = 0;
         for (int i = 0; i < s; i++) {
             double v_err = 0;
+            //v_err = (G[i][i] - 1)*(G[i][i]-1);
             for (int j = 0; j < n; j++) {
                 eigenvectors[i][j] = phiT_A[i][j];
                 double dif = eigenvalues[i] * eigenvectors[i][j] - phi_A[j][i];

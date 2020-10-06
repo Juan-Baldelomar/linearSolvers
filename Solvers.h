@@ -18,11 +18,18 @@ void Eliminacion_Gaussiana_Pivoteo(vector<vector<double> > &A, vector<double> &b
 void LU_Solve(vector<vector<double> > &A, vector<double>&b, vector<double>&x);
 void Descomposicion_LU(vector<vector<double> > &A, vector<vector<double> > &L, vector<vector<double> > &U);
 void Descomposicion_LU_Dolittle(vector<vector<double> > &A, vector<vector<double> > &L, vector<vector<double> > &U);
+void Descomposicion_LU_Dolittle_TriD(vector<vector<double> > &A, vector<double>  &L, vector<vector<double>> &U);
+void FactorizarCholesky(vector<vector<double> > &A, vector<vector<double> > &H);
+void factorizarLDLT(vector<vector<double> > &A, vector<vector<double> > &L, vector<vector<double> > &DLT);
+void FactorizarCholeskyTriD(vector<vector<double> > &A, vector<vector<double> > &H);
+void FactorizarCholeskyTriD(vector<double> &D, vector<double>&L, vector<double> &H);
 void LU_Solve(vector<vector<double> > &A, vector<double> &b, vector<double> &x);
 void Matrix_Mult(vector<vector<double>>&A, vector<vector<double>>&B, vector<vector<double>>&C);
 void VectorConstant_Mult(vector< double> &v, double c);
 void MatrixLU_Mult(vector<vector<double>>&M, vector<vector<double>>&R);
 void VectorConstant_Mult(vector< double> &v, double c);
+void copyVector(vector<double> &origin, vector<double> &dest);
+void copyVectorToCol(vector<double> &origin, vector<vector<double>> &dest, int col);
 void grand_schmidt(vector<vector<double>> &lista_vectores, vector<double> &v, int nValidVectors = 0, bool isNormalized = false);
 void Try_Sol(vector< vector<double > > &A, vector<double>&b, vector<double>&x);
 void Jacobi(vector<vector <double> > &A, vector < double> &b, vector< double> &x, double error, int max_it=1000);
