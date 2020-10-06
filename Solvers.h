@@ -24,11 +24,14 @@ void factorizarLDLT(vector<vector<double> > &A, vector<vector<double> > &L, vect
 void FactorizarCholeskyTriD(vector<vector<double> > &A, vector<vector<double> > &H);
 void FactorizarCholeskyTriD(vector<double> &D, vector<double>&L, vector<double> &H);
 void LU_Solve(vector<vector<double> > &A, vector<double> &b, vector<double> &x);
+void TriDLU_Solve(vector<vector<double>> &M, vector<double>&b, vector<double>&x);
 void Matrix_Mult(vector<vector<double>>&A, vector<vector<double>>&B, vector<vector<double>>&C);
+void MatrixVector_Mult(vector<vector<double> > &A, vector<double> &v, vector<double> &v_r);
 void VectorConstant_Mult(vector< double> &v, double c);
 void MatrixLU_Mult(vector<vector<double>>&M, vector<vector<double>>&R);
 void VectorConstant_Mult(vector< double> &v, double c);
 void copyVector(vector<double> &origin, vector<double> &dest);
+void copyColToCol(vector<vector<double>> &origin, vector<vector<double>> &dest, int colOrigin, int colDest);
 void copyVectorToCol(vector<double> &origin, vector<vector<double>> &dest, int col);
 void grand_schmidt(vector<vector<double>> &lista_vectores, vector<double> &v, int nValidVectors = 0, bool isNormalized = false);
 void Try_Sol(vector< vector<double > > &A, vector<double>&b, vector<double>&x);

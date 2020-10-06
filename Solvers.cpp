@@ -60,6 +60,41 @@ void Triangular_Inferior(vector<vector<double> > &L, vector<double> &b, vector<d
     }
 }
 
+/*
+ * U[i][2] valores de diagonal superior
+ * U[i][1] valores de diagonal principal
+ * index d indicates col position of de diagonal
+ * */
+void Triangular_Superior_TriD(vector<vector<double>>&U, vector<double>&b, vector<double>&x, int d){
+    int n = U.size();
+    for (int i =n-1; i>=0; i--){
+        double acc = 0;
+        if (i<n-1){
+            x[i] = (b[i]- x[i+1] * U[i][d+1]) / U[i][d];
+        }else{
+            x[i] = b[i] / U[i][d];
+        }
+    }
+}
+
+
+/*
+ * L[i][0] valores de diagonal inferior
+ * L[i][1] valores de diagonal principal
+ * index d indicates col position of de diagonal
+ * */
+void Triangular_Inferior_TriD(vector<vector<double>>&L, vector<double>&b, vector<double>&x, int d){
+    int n = L.size();
+    for (int i =0; i<n; i++){
+        double acc = 0;
+        if (i>0){
+            x[i] = (b[i]-x[i-1]*L[i][d-1])/L[i][d];
+        }else{
+            x[i] = b[i]/L[i][d];
+        }
+    }
+}
+
 void Eliminacion_Gaussiana(vector<vector<double> > &A, vector<double> &b, vector<double> &x) {
 
     int n = A.size();
@@ -194,6 +229,12 @@ void LU_Solve(vector<vector<double> > &A, vector<double> &b, vector<double> &x) 
     for (int i = 0; i < n; i++) {
         x[i] = orderedX[i];
     }
+}
+
+//M es una matriz de nx4
+void TriDLU_Solve(vector<vector<double>> &M, vector<double>&b, vector<double>&x){
+    Triangular_Inferior_TriD(M, b, x, 1);
+    Triangular_Superior_TriD(M, x, x, 2);
 }
 
 
@@ -657,7 +698,8 @@ void Transpose_Matrix_Mult(vector<vector<double> > &AT, vector<vector<double> > 
 void MatrixVector_Mult(vector<vector<double> > &A, vector<double> &v, vector<double> &v_r) {
     int n = A.size();
     int m = v.size();
-    if (n != m) {
+    int p = A[0].size();
+    if (p != m) {
         cout << "ERROR: size of matrix and vector dont match" << endl;
         return;
     }
@@ -850,11 +892,27 @@ void copyVector(vector<double> &origin, vector<double> &dest){
 void copyVectorToCol(vector<double> &origin, vector<vector<double>> &dest, int col){
     int n = origin.size();
     if (n!= dest.size()){
-        cout << "ERR CPY VECTOR: Sizes dont match" << endl;
+        cout << "ERR CPY VECTOR TO COL: Sizes dont match" << endl;
         return;
     }
     for (int i =0; i<n; i++)
         dest[i][col] = origin[i];
+}
+
+void copyColToCol(vector<vector<double>> &origin, vector<vector<double>> &dest, int colOrigin, int colDest){
+    int n = origin.size();
+    if (n!= dest.size()){
+        cout << "ERR CPY COL TO COL: Sizes dont match" << endl;
+        return;
+    }
+
+    if (colOrigin>=origin[0].size() || colDest>= dest[0].size()){
+        cout << "ERR: CPY COL TO COL: COLS DONT EXIST" <<endl;
+        return;
+    }
+
+    for (int i =0; i<n; i++)
+        dest[i][colDest] = origin[i][colOrigin];
 }
 
 
