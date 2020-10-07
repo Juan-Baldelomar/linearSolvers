@@ -14,7 +14,7 @@
 #include <cstdlib>
 #include "Tools.h"
 #include "Solvers.h"
-
+#include <sys/time.h>
 using namespace std;
 
 /*
@@ -260,57 +260,39 @@ void pruebaTRIDLU(){
 
 void pruebaSolveTRID(){
     vector<double> D, L, b, x, y;
-    produceTriD_Sim_Entry(30, D, L);
+    produceTriD_Sim_Entry(30000, D, L);
     vector<vector<double>> MLD, MLU, A, AF, LU, M;
-    LU.assign(30, vector<double>(4, 0.0));
-    AF.assign(30, vector<double>(3, 0.0));
+    LU.assign(30000, vector<double>(4, 0.0));
+    AF.assign(30000, vector<double>(3, 0.0));
     copyVectorToCol(D, AF, 1);
     copyVectorToCol(L, AF, 0);
     copyVectorToCol(L, AF,2);
     AF[0][2] = -1;
 
-    M.assign(30, vector<double>(4, 1.0));
-    y.assign(30, 2.0);
-    x.assign(30, 0.0);
-    b.assign(30, 0.0);
+    M.assign(30000, vector<double>(4, 1.0));
+    y.assign(30000, 1.0);
+    for (int i = 1; i<30000; i++){
+        y[i] = i%10;
+    }
+
+    x.assign(30000, 0.0);
+    b.assign(30000, 0.0);
 
     Descomposicion_LU_Dolittle_TriD(AF, LU);
 
-    MLD.assign(30, vector<double>(30, 0.0));
-    MLU.assign(30, vector<double>(30, 0.0));
-    A.assign(30, vector<double>(30, 0.0));
+    // Simulation of Matrix Mult
+    b[0] = AF[0][1]*y[0] + AF[0][2]*y[1];
 
-    for (int i = 0; i<30; i++){
-        for(int j = 0; j<30; j++){
-            if (i==j){
-                MLD[i][j] = 1;
-                MLU[i][j] = LU[i][2];
-            }
-            else if (j==i-1)
-                MLD[i][j] = LU[i][0];
-            else if (j==i+1)
-                MLU[i][j]=LU[i][3];
-        }
+    for (int i = 1; i<30000-1; i++){
+        b[i] = AF[i][0]*y[i-1] + AF[i][1] * y[i] + AF[i][2]*y[i+1];
     }
-
-    Matrix_Mult(MLD, MLU, A);
-    cout << A << endl;
-
-    MatrixVector_Mult(A,y, b);
-
+    b[29000] = AF[29000][0]*y[28000] + AF[29000][1]*y[29000];
 
 
     TriDLU_Solve(LU, b, x);
-    //Jacobi(A, b, x, 0.0001, 2000);
-    //LU_Solve(A, b, x);
-
-    //Matrix_Mult(MLD, MLU, A);
-    //MatrixVector_Mult(A,y, b);
     cout << x << endl;
 
-
-    //MatrixVector_Mult(A, )
-    Try_Sol(A, b, x);
+    //Try_Sol(A, b, x);
 
 }
 
@@ -353,10 +335,17 @@ void ejercicio5(){
 
 
 int main() {
+    struct timeval tv1, tv2;
+    struct timezone tz;
+    double elapsed;
+    gettimeofday(&tv1, &tz);
     //ejercicio4();
     //pruebaTRID();
-    //pruebaSolveTRID();
-    ejercicio5();
+    pruebaSolveTRID();
+    //ejercicio5();
+    gettimeofday(&tv2, &tz);
+    elapsed = (double) (tv2.tv_sec-tv1.tv_sec) + (double) (tv2.tv_usec-tv1.tv_usec) * 1.e-6;
+    printf("elapsed time = %f seconds.\n", elapsed);
     return 0;
 }
 

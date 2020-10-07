@@ -667,12 +667,21 @@ void Matrix_Mult(vector<vector<double> > &A, vector<vector<double> > &B, vector<
     int p = A[0].size();
     omp_set_num_threads(omp_get_num_procs());
     int i, j, k;
+    /*#pragma omp parallel for private(i,j) shared(C,n, m) default(none)
+    for(int i = 0; i<n; i++){
+        for(j=0; j<m; j++){
+            C[i][j] = 0;
+        }
+    }*/
+    //C.assign(n, vector<double>(m,0.0));
+
     #pragma omp parallel for private(i,j,k) shared(A,B,C,n, m, p) default(none)
     for (i = 0; i < n; i++) {
         for (j = 0; j < m; j++) {
-            //cout << i << " " << j << endl;
             double acc = 0;
+            //double a_ik = A[i][k];
             for (k = 0; k < p; k++) {
+                //C[i][j] += a_ik * B[k][j];
                 acc += A[i][k] * B[k][j];
             }
             C[i][j] = acc;
