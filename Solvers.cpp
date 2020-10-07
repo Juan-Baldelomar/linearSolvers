@@ -665,10 +665,14 @@ void Matrix_Mult(vector<vector<double> > &A, vector<vector<double> > &B, vector<
     int n = A.size();
     int m = B[0].size();
     int p = A[0].size();
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < m; j++) {
+    omp_set_num_threads(omp_get_num_procs());
+    int i, j, k;
+    #pragma omp parallel for private(i,j,k) shared(A,B,C,n, m, p) default(none)
+    for (i = 0; i < n; i++) {
+        for (j = 0; j < m; j++) {
+            //cout << i << " " << j << endl;
             double acc = 0;
-            for (int k = 0; k < p; k++) {
+            for (k = 0; k < p; k++) {
                 acc += A[i][k] * B[k][j];
             }
             C[i][j] = acc;
@@ -913,6 +917,36 @@ void copyColToCol(vector<vector<double>> &origin, vector<vector<double>> &dest, 
 
     for (int i =0; i<n; i++)
         dest[i][colDest] = origin[i][colOrigin];
+}
+
+double findMax(vector<vector<double>>&A, int &i_max, int &j_max){
+    int n = A.size();
+    int i, j;
+    vector<double>max(n, 0.0);
+    vector<int>max_j(n, 0);
+    omp_set_num_threads(omp_get_num_procs());
+    #pragma omp parallel for private(i, j) shared(A, max, max_j, n) default(none)
+    for (i = 0; i<n; i++){
+        for (j=0; j<n; j++){
+            if (i == j)
+                continue;
+
+            if(max[i]<fabs(A[i][j])){
+                max[i] = fabs(A[i][j]);
+                max_j[i] = j;
+            }
+        }
+    }
+
+    double realMax = 0;
+    for (int k=0; k<n;k++){
+        if (max[k]>realMax){
+            realMax = max[k];
+            i_max = k;
+            j_max = max_j[k];
+        }
+    }
+    return realMax;
 }
 
 
@@ -1280,8 +1314,10 @@ void JacobiEigenValues(vector<vector<double>> &A, vector<double> &eigenvalues, d
 
     for (int it = 0; it < max_it; it++) {
         //find MAX 
-        double max = 0;
-        for (int i = 0; i < n; i++) {
+      //  double max = 0;
+        double max = findMax(A, i_max, j_max);
+
+       /* for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
                 if (i == j)
                     continue;
@@ -1291,7 +1327,8 @@ void JacobiEigenValues(vector<vector<double>> &A, vector<double> &eigenvalues, d
                     max = fabs(A[i][j]);
                 }
             }
-        }
+        }*/
+        cout << max << " " << i_max << " " << j_max << endl;
 
         // criterio de paro
         if (max < tol) {
@@ -1326,6 +1363,7 @@ void JacobiEigenValues(vector<vector<double>> &A, vector<double> &eigenvalues, d
         // Restaurar G
         G[i_max][i_max] = G[j_max][j_max] = 1;
         G[i_max][j_max] = G[j_max][i_max] = 0;
+        //cout << it << endl;
     } //it
 
     cout << "Metodo no pudo converger " << endl;

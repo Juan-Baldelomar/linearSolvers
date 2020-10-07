@@ -2,6 +2,7 @@
 #define SOLVERS_HPP
 #include <bits/stdc++.h>
 #include <math.h>
+#include <omp.h>
 using namespace std;
 /*
    A: vector de vectores nxn

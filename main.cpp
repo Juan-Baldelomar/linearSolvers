@@ -314,11 +314,49 @@ void pruebaSolveTRID(){
 
 }
 
+void ejercicio5(){
+
+    //variables necesarias
+    vector<vector<double>> A;
+    vector<vector<double>> eigenvectors;
+    vector<double> eigenvalues;
+
+
+
+    //entrada
+    ReadMatrix(A, "Insumo_Tarea07/Eigen_50x50.txt");
+    eigenvalues.assign(A.size(), 0.0);
+    int nEigen = 500;
+
+    //procesamiento
+    JacobiEigenValues(A, eigenvalues, 0.00001, 3000);
+
+    //salida
+    //WriteMatrix(eigenvectors, "Out/N_eigenvectors_50x50_out.txt");
+    WriteVector(eigenvalues, "Out/N_eigenvalues_50x50_out.txt");
+    cout << "los eigenvalores son "<< eigenvalues << endl;
+    //cout << "los eigenvectores (almacenados cada uno en una fila) son "<< endl << eigenvectors << endl;
+
+    //for (int n = 0; n < nEigen; n++) {
+    //ReadMatrix(A, "Insumo_Tarea07/Eigen_500x500.txt");
+    //vector<double> b;
+    //b.assign(500, 0.0);
+
+   // for (int i = 0; i < 500 ; i++)
+    //    b[i] = eigenvalues[235] * eigenvectors[235][i];
+
+
+    //Try_Sol(A, b, eigenvectors[235]);
+    //}
+}
+
+
 
 int main() {
     //ejercicio4();
-    pruebaTRID();
+    //pruebaTRID();
     //pruebaSolveTRID();
+    ejercicio5();
     return 0;
 }
 
